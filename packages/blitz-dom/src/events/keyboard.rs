@@ -124,21 +124,23 @@ fn apply_keypress_event(
     let shift = mods.contains(Modifiers::SHIFT);
     let action_mod = mods.contains(ACTION_MOD);
     let is_multiline = input_data.is_multiline;
+    
+// this was a critical fix to prevent placeholders and dots from mixing. 
+    if input_data.is_password {
+        let showing_placeholder = input_data.shadow_text.is_empty()
+            && input_data.editor.text() == input_data.placeholder.as_str();
 
-    // PHASE 1: Leave placeholder mode cleanly
-    let showing_placeholder = input_data.shadow_text.is_empty()
-        && !input_data.placeholder.is_empty()
-        && input_data.editor.text() == input_data.placeholder.as_str();
-
-    if showing_placeholder {
-        match &event.key {
-            Key::Character(c) if !c.is_empty() && *c != "\n" => {
-                input_data.editor.set_text(""); 
+        if showing_placeholder {
+            match &event.key {
+                Key::Character(c) if !c.is_empty() && *c != "\n" && *c != "\r" => {
+                    // Force clear before first real char
+                    input_data.editor.set_text("");
+                    let mut driver = input_data.editor.driver(font_ctx, layout_ctx);
+                    driver.refresh_layout();
+                }
+                Key::Backspace | Key::Delete => return None,
+                _ => {}
             }
-            Key::Backspace | Key::Delete => {
-                return None; 
-            }
-            _ => {}
         }
     }
 
