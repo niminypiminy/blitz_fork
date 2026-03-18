@@ -497,6 +497,7 @@ pub struct TextInputData {
     pub is_password: bool,
     // this is plaintext string
     pub shadow_text: String,
+    pub placeholder: String,
 }
 
 impl TextInputData {
@@ -506,6 +507,7 @@ impl TextInputData {
             is_multiline,
             is_password: false,
             shadow_text: String::new(),
+            placeholder: String::new(),
         }
     }
 
@@ -517,8 +519,9 @@ impl TextInputData {
     ) {
         self.shadow_text = text.to_string();
 
-        // show password
-        let display_text = if self.is_password {
+        let display_text = if text.is_empty() && !self.placeholder.is_empty() {
+            self.placeholder.clone()
+        } else if self.is_password {
             "•".repeat(text.chars().count())
         } else {
             text.to_string()
