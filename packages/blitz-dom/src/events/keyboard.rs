@@ -116,7 +116,6 @@ fn apply_keypress_event(
     shell_provider: &dyn ShellProvider,
     event: BlitzKeyEvent,
 ) -> Option<GeneratedEvent> {
-    // Do nothing if it is a keyup event
     if !event.state.is_pressed() {
         return None;
     }
@@ -124,19 +123,20 @@ fn apply_keypress_event(
     let mods = event.modifiers;
     let shift = mods.contains(Modifiers::SHIFT);
     let action_mod = mods.contains(ACTION_MOD);
-
     let is_multiline = input_data.is_multiline;
 
-    let has_input = if input_data.is_password { 
-        !input_data.shadow_text.is_empty() 
-    } else { 
-        !input_data.editor.raw_text().is_empty() 
-    };
+    // PHASE 1: Leave placeholder mode cleanly
+    let showing_placeholder = input_data.shadow_text.is_empty()
+        && !input_data.placeholder.is_empty()
+        && input_data.editor.text() == input_data.placeholder.as_str();
 
-    if !has_input && !input_data.editor.raw_text().is_empty() {
-        match event.key {
-            Key::Character(_) | Key::Backspace | Key::Delete | Key::Enter => {
-                input_data.editor.set_text("");
+    if showing_placeholder {
+        match &event.key {
+            Key::Character(c) if !c.is_empty() && *c != "\n" => {
+                input_data.editor.set_text(""); 
+            }
+            Key::Backspace | Key::Delete => {
+                return None; 
             }
             _ => {}
         }
@@ -214,7 +214,8 @@ fn apply_keypress_event(
                 if action_mod { driver.delete_word() } else { driver.delete() }
                 Some(GeneratedEvent::Input)
             }
-            Key::Character(ref c) if c == "\n" => {
+
+            Key::Character(ref c) if *c == "\n" => {
                 if is_multiline {
                     driver.insert_or_replace_selection("\n");
                     Some(GeneratedEvent::Input)
@@ -247,16 +248,10 @@ fn apply_keypress_event(
         }
     };
 
-    let is_empty = if input_data.is_password {
-        input_data.shadow_text.is_empty()
-    } else {
-        input_data.editor.raw_text().is_empty()
-    };
-
-    if is_empty && !input_data.placeholder.is_empty() {
-        input_data.editor.set_text(&input_data.placeholder);
-        return None; 
+    if !input_data.is_password {
+        input_data.shadow_text = input_data.editor.raw_text().to_string();
     }
+    input_data.refresh_display(font_ctx, layout_ctx);
 
     generated_event
 }
