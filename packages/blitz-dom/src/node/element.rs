@@ -495,8 +495,7 @@ pub struct TextInputData {
     pub editor: Box<parley::PlainEditor<TextBrush>>,
     pub is_multiline: bool,
     pub is_password: bool,
-    // this is plaintext string
-    pub shadow_text: String,
+    pub shadow_text: String,  // always the REAL value
     pub placeholder: String,
 }
 
@@ -518,17 +517,25 @@ impl TextInputData {
         text: &str,
     ) {
         self.shadow_text = text.to_string();
+        self.refresh_display(font_ctx, layout_ctx);
+    }
 
-        let display_text = if text.is_empty() && !self.placeholder.is_empty() {
+    /// Call this after any edit or external value change
+    pub fn refresh_display(
+        &mut self,
+        font_ctx: &mut FontContext,
+        layout_ctx: &mut LayoutContext<TextBrush>,
+    ) {
+        let target_text = if self.shadow_text.is_empty() && !self.placeholder.is_empty() {
             self.placeholder.clone()
         } else if self.is_password {
-            "•".repeat(text.chars().count())
+            "•".repeat(self.shadow_text.chars().count())
         } else {
-            text.to_string()
+            self.shadow_text.clone()
         };
 
-        if self.editor.text() != display_text.as_str() {
-            self.editor.set_text(&display_text);
+        if self.editor.text() != target_text.as_str() {
+            self.editor.set_text(&target_text);
             self.editor.driver(font_ctx, layout_ctx).refresh_layout();
         }
     }
