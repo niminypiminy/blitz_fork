@@ -74,17 +74,23 @@ pub(crate) fn handle_keypress<F: FnMut(DomEvent)>(
             if let Some(generated_event) = generated_event {
                 match generated_event {
                    GeneratedEvent::Input => {
-                        let value = if input_data.is_password {
-                            input_data.shadow_text.clone()
-                        } else {
-                            input_data.editor.raw_text().to_string()
-                        };
-                        dispatch_event(DomEvent::new(
-                            node_id,
-                            DomEventData::Input(BlitzInputEvent { value }),
-                        ));
-                        doc.shell_provider.request_redraw();
-                    }
+                let value = if input_data.is_password {
+                input_data.shadow_text.clone()
+                } else {
+                    input_data.editor.raw_text().to_string()
+                    };
+    
+                let actual_value = if !input_data.is_password && value == input_data.placeholder {
+                    "".to_string()
+                } else {
+                value
+                    };
+                dispatch_event(DomEvent::new(
+                    node_id,
+                DomEventData::Input(BlitzInputEvent { value: actual_value }),
+                    ));
+                doc.shell_provider.request_redraw();
+                }
                     GeneratedEvent::Select => {
                         doc.shell_provider.request_redraw();
                     }
@@ -265,35 +271,31 @@ fn apply_keypress_event(
                 }
             }
            Key::Character(ref s) => {
-                if input_data.is_password {
-                    let selection = driver.editor.raw_selection();
-                    if selection.anchor() != selection.focus() {
-                        input_data.shadow_text.clear();
-                    }
-                    input_data.shadow_text.push_str(s);
-                    driver.insert_or_replace_selection("•");
-                } else {
-                    // REMOVED shadow_text.push_str(s) from here
-                    driver.insert_or_replace_selection(s);
-                }
-                Some(GeneratedEvent::Input)
+             if input_data.is_password {
+                let selection = driver.editor.raw_selection();
+                if selection.anchor() != selection.focus() {
+            input_data.shadow_text.clear();
+        }
+            input_data.shadow_text.push_str(s);
+            driver.insert_or_replace_selection("•");
+        } else {
+        driver.insert_or_replace_selection(s);
             }
+        Some(GeneratedEvent::Input)
+    }
             _ => None,
         }
     };
 
     let is_empty = if input_data.is_password {
-        input_data.shadow_text.is_empty()
-    } else {
-        input_data.editor.raw_text().is_empty()
-    };
+    input_data.shadow_text.is_empty()
+} else {
+    input_data.editor.raw_text().is_empty()
+};
 
-    if is_empty && !input_data.placeholder.is_empty() {
-        input_data.editor.set_text(&input_data.placeholder);
-        return Some(GeneratedEvent::Input);
-    }
-
-    generated_event
+if is_empty && !input_data.placeholder.is_empty() {
+    input_data.editor.set_text(&input_data.placeholder);
+    return None; 
 }
 
 /// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#field-that-blocks-implicit-submission
