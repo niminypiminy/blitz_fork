@@ -117,13 +117,13 @@ fn apply_keypress_event(
 
     let is_multiline = input_data.is_multiline;
 
-    if input_data.shadow_text.is_empty() && !input_data.editor.text().is_empty() {
-        match event.key {
-            Key::Character(_) | Key::Backspace | Key::Delete | Key::Enter => {
-                input_data.editor.set_text("");
-            }
-            _ => {}
+    if input_data.shadow_text.is_empty() && input_data.editor.text().len() != 0 {
+    match event.key {
+        Key::Character(_) | Key::Backspace | Key::Delete | Key::Enter => {
+            input_data.editor.set_text("");
         }
+        _ => {}
+      }
     }
 
     let generated_event = {
