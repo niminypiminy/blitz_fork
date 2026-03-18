@@ -271,21 +271,35 @@ fn apply_keypress_event(
                 }
             }
            Key::Character(ref s) => {
-             if input_data.is_password {
-                let selection = driver.editor.raw_selection();
-                if selection.anchor() != selection.focus() {
-            input_data.shadow_text.clear();
-        }
-            input_data.shadow_text.push_str(s);
-            driver.insert_or_replace_selection("•");
-        } else {
-        driver.insert_or_replace_selection(s);
-            }
-        Some(GeneratedEvent::Input)
-    }
+                if input_data.is_password {
+                    let selection = driver.editor.raw_selection();
+                    if selection.anchor() != selection.focus() {
+                        input_data.shadow_text.clear();
+                    }
+                    input_data.shadow_text.push_str(s);
+                    driver.insert_or_replace_selection("•");
+                } else {
+                    driver.insert_or_replace_selection(s);
+                }
+                Some(GeneratedEvent::Input)
+            } 
             _ => None,
         }
     };
+
+    let is_empty = if input_data.is_password {
+        input_data.shadow_text.is_empty()
+    } else {
+        input_data.editor.raw_text().is_empty()
+    };
+
+    if is_empty && !input_data.placeholder.is_empty() {
+        input_data.editor.set_text(&input_data.placeholder);
+        return None; 
+    }
+
+    generated_event // Return the event
+} 
 
     let is_empty = if input_data.is_password {
     input_data.shadow_text.is_empty()
