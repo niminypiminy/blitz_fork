@@ -615,31 +615,24 @@ fn create_text_editor(doc: &mut BaseDocument, input_element_id: usize, is_multil
         let mut text_input_data = TextInputData::new(is_multiline);
 
         if element.attr(local_name!("type")) == Some("password") {
-            text_input_data.is_password = true;
+        text_input_data.is_password = true;
         }
-        let editor = &mut text_input_data.editor;
 
         let initial_text = element.attr(local_name!("value")).unwrap_or("");
         let placeholder_text = element
-            .attr(local_name!("placeholder"))
-            .unwrap_or("")
-            .to_string();
+        .attr(local_name!("placeholder"))
+        .unwrap_or("")
+         .to_string();
 
         text_input_data.placeholder = placeholder_text.clone();
-        text_input_data.shadow_text = initial_text.to_string(); //this is the real value
+        text_input_data.shadow_text = initial_text.to_string();
 
         let editor = &mut text_input_data.editor;
 
-        if initial_text.is_empty() && !placeholder_text.is_empty() {
-            // this shows placeholder
-            editor.set_text(&placeholder_text);
-        } else if text_input_data.is_password {
-            // this shows dots, if password.
-            editor.set_text(&"•".repeat(initial_text.chars().count()));
-        } else {
-            // shows real text if not password
-            editor.set_text(initial_text);
-        }
+        text_input_data.refresh_display(
+        &mut doc.font_ctx.lock().unwrap(),
+        &mut doc.layout_ctx,
+        );
 
         element.special_data = SpecialElementData::TextInput(text_input_data);
     }
