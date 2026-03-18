@@ -73,8 +73,12 @@ pub(crate) fn handle_keypress<F: FnMut(DomEvent)>(
 
             if let Some(generated_event) = generated_event {
                 match generated_event {
-                    GeneratedEvent::Input => {
-                        let value = input_data.shadow_text.clone();
+                   GeneratedEvent::Input => {
+                        let value = if input_data.is_password {
+                            input_data.shadow_text.clone()
+                        } else {
+                            input_data.editor.raw_text().to_string()
+                        };
                         dispatch_event(DomEvent::new(
                             node_id,
                             DomEventData::Input(BlitzInputEvent { value }),
@@ -117,14 +121,14 @@ fn apply_keypress_event(
 
     let is_multiline = input_data.is_multiline;
 
-   if input_data.shadow_text.is_empty() && !input_data.editor.raw_text().is_empty() {
-    match event.key {
-        Key::Character(_) | Key::Backspace | Key::Delete | Key::Enter => {
-            input_data.editor.set_text("");
+   if input_data.shadow_text.is_empty() && !input_data.editor.raw_text().is_empty() && !input_data.is_password {
+        match event.key {
+            Key::Character(_) | Key::Backspace | Key::Delete | Key::Enter => {
+                input_data.editor.set_text("");
+            }
+            _ => {}
         }
-        _ => {}
     }
-}
 
     let generated_event = {
         let mut driver = input_data.editor.driver(font_ctx, layout_ctx);
@@ -260,7 +264,7 @@ fn apply_keypress_event(
                     Some(GeneratedEvent::Submit)
                 }
             }
-            Key::Character(ref s) => {
+           Key::Character(ref s) => {
                 if input_data.is_password {
                     let selection = driver.editor.raw_selection();
                     if selection.anchor() != selection.focus() {
@@ -269,7 +273,7 @@ fn apply_keypress_event(
                     input_data.shadow_text.push_str(s);
                     driver.insert_or_replace_selection("•");
                 } else {
-                    input_data.shadow_text.push_str(s);
+                    // REMOVED shadow_text.push_str(s) from here
                     driver.insert_or_replace_selection(s);
                 }
                 Some(GeneratedEvent::Input)
@@ -278,7 +282,13 @@ fn apply_keypress_event(
         }
     };
 
-    if input_data.shadow_text.is_empty() && !input_data.placeholder.is_empty() {
+    let is_empty = if input_data.is_password {
+        input_data.shadow_text.is_empty()
+    } else {
+        input_data.editor.raw_text().is_empty()
+    };
+
+    if is_empty && !input_data.placeholder.is_empty() {
         input_data.editor.set_text(&input_data.placeholder);
         return Some(GeneratedEvent::Input);
     }
