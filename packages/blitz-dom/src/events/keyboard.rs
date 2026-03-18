@@ -121,7 +121,13 @@ fn apply_keypress_event(
 
     let is_multiline = input_data.is_multiline;
 
-   if input_data.shadow_text.is_empty() && !input_data.editor.raw_text().is_empty() && !input_data.is_password {
+  let has_input = if input_data.is_password { 
+        !input_data.shadow_text.is_empty() 
+    } else { 
+        !input_data.editor.raw_text().is_empty() 
+    };
+
+    if !has_input && !input_data.editor.raw_text().is_empty() {
         match event.key {
             Key::Character(_) | Key::Backspace | Key::Delete | Key::Enter => {
                 input_data.editor.set_text("");
@@ -228,26 +234,20 @@ fn apply_keypress_event(
                 }
                 Some(GeneratedEvent::Select)
             }
-            Key::Delete => {
-                
-                sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
-                if action_mod {
-                    driver.delete_word()
-                } else {
-                    driver.delete()
-                }
-                Some(GeneratedEvent::Input)
-            }
             Key::Backspace => {
-               
-                sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
-                if action_mod {
-                    driver.backdelete_word()
-                } else {
-                    driver.backdelete()
-                }
-                Some(GeneratedEvent::Input)
+          if input_data.is_password {
+          sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
             }
+          if action_mod { driver.backdelete_word() } else { driver.backdelete() }
+         Some(GeneratedEvent::Input)
+           }
+            Key::Delete => {
+              if input_data.is_password {
+                sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
+                }
+               if action_mod { driver.delete_word() } else { driver.delete() }
+                Some(GeneratedEvent::Input)
+             }
             Key::Character(ref c) if c == "\n" => {
                 if is_multiline {
                     driver.insert_or_replace_selection("\n");
@@ -335,11 +335,12 @@ fn implicit_form_submission(doc: &BaseDocument, text_target: usize) {
 }
 
 fn sync_shadow_before_edit(shadow_text: &mut String, editor: &parley::PlainEditor<TextBrush>) {
+    if shadow_text.is_empty() {
+        return;
+    }
     let selection = editor.raw_selection();
     if selection.anchor() == selection.focus() {
-        if !shadow_text.is_empty() {
-            shadow_text.pop();
-        }
+        shadow_text.pop(); // Safe now because of the check above
     } else {
         shadow_text.clear();
     }
