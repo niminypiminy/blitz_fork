@@ -127,7 +127,7 @@ fn apply_keypress_event(
 
     let is_multiline = input_data.is_multiline;
 
-  let has_input = if input_data.is_password { 
+    let has_input = if input_data.is_password { 
         !input_data.shadow_text.is_empty() 
     } else { 
         !input_data.editor.raw_text().is_empty() 
@@ -170,90 +170,50 @@ fn apply_keypress_event(
 
             Key::ArrowLeft => {
                 if action_mod {
-                    if shift {
-                        driver.select_word_left()
-                    } else {
-                        driver.move_word_left()
-                    }
-                } else if shift {
-                    driver.select_left()
-                } else {
-                    driver.move_left()
-                }
+                    if shift { driver.select_word_left() } else { driver.move_word_left() }
+                } else if shift { driver.select_left() } else { driver.move_left() }
                 Some(GeneratedEvent::Select)
             }
             Key::ArrowRight => {
                 if action_mod {
-                    if shift {
-                        driver.select_word_right()
-                    } else {
-                        driver.move_word_right()
-                    }
-                } else if shift {
-                    driver.select_right()
-                } else {
-                    driver.move_right()
-                }
+                    if shift { driver.select_word_right() } else { driver.move_word_right() }
+                } else if shift { driver.select_right() } else { driver.move_right() }
                 Some(GeneratedEvent::Select)
             }
             Key::ArrowUp => {
-                if shift {
-                    driver.select_up()
-                } else {
-                    driver.move_up()
-                }
+                if shift { driver.select_up() } else { driver.move_up() }
                 Some(GeneratedEvent::Select)
             }
             Key::ArrowDown => {
-                if shift {
-                    driver.select_down()
-                } else {
-                    driver.move_down()
-                }
+                if shift { driver.select_down() } else { driver.move_down() }
                 Some(GeneratedEvent::Select)
             }
             Key::Home => {
                 if action_mod {
-                    if shift {
-                        driver.select_to_text_start()
-                    } else {
-                        driver.move_to_text_start()
-                    }
-                } else if shift {
-                    driver.select_to_line_start()
-                } else {
-                    driver.move_to_line_start()
-                }
+                    if shift { driver.select_to_text_start() } else { driver.move_to_text_start() }
+                } else if shift { driver.select_to_line_start() } else { driver.move_to_line_start() }
                 Some(GeneratedEvent::Select)
             }
             Key::End => {
                 if action_mod {
-                    if shift {
-                        driver.select_to_text_end()
-                    } else {
-                        driver.move_to_text_end()
-                    }
-                } else if shift {
-                    driver.select_to_line_end()
-                } else {
-                    driver.move_to_line_end()
-                }
+                    if shift { driver.select_to_text_end() } else { driver.move_to_text_end() }
+                } else if shift { driver.select_to_line_end() } else { driver.move_to_line_end() }
                 Some(GeneratedEvent::Select)
             }
             Key::Backspace => {
-          if input_data.is_password {
-          sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
-            }
-          if action_mod { driver.backdelete_word() } else { driver.backdelete() }
-         Some(GeneratedEvent::Input)
-           }
-            Key::Delete => {
-              if input_data.is_password {
-                sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
+                if input_data.is_password {
+                    sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
                 }
-               if action_mod { driver.delete_word() } else { driver.delete() }
+                if action_mod { driver.backdelete_word() } else { driver.backdelete() }
                 Some(GeneratedEvent::Input)
-             }
+            }
+            Key::Delete => {
+                if input_data.is_password {
+                    sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
+                }
+                if action_mod { driver.delete_word() } else { driver.delete() }
+                Some(GeneratedEvent::Input)
+            }
             Key::Character(ref c) if c == "\n" => {
                 if is_multiline {
                     driver.insert_or_replace_selection("\n");
@@ -270,7 +230,7 @@ fn apply_keypress_event(
                     Some(GeneratedEvent::Submit)
                 }
             }
-           Key::Character(ref s) => {
+            Key::Character(ref s) => {
                 if input_data.is_password {
                     let selection = driver.editor.raw_selection();
                     if selection.anchor() != selection.focus() {
@@ -282,7 +242,7 @@ fn apply_keypress_event(
                     driver.insert_or_replace_selection(s);
                 }
                 Some(GeneratedEvent::Input)
-            } 
+            }
             _ => None,
         }
     };
@@ -298,21 +258,9 @@ fn apply_keypress_event(
         return None; 
     }
 
-    generated_event // Return the event
-} 
-
-    let is_empty = if input_data.is_password {
-    input_data.shadow_text.is_empty()
-} else {
-    input_data.editor.raw_text().is_empty()
-};
-
-if is_empty && !input_data.placeholder.is_empty() {
-    input_data.editor.set_text(&input_data.placeholder);
-    return None; 
+    generated_event
 }
 
-/// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#field-that-blocks-implicit-submission
 fn implicit_form_submission(doc: &BaseDocument, text_target: usize) {
     let Some(form_owner_id) = doc.controls_to_form.get(&text_target) else {
         return;
@@ -326,18 +274,7 @@ fn implicit_form_submission(doc: &BaseDocument, text_target: usize) {
             element_data.attr(local_name!("type")).is_some_and(|t| {
                 matches!(
                     t,
-                    "text"
-                        | "search"
-                        | "email"
-                        | "url"
-                        | "tel"
-                        | "password"
-                        | "date"
-                        | "month"
-                        | "week"
-                        | "time"
-                        | "datetime-local"
-                        | "number"
+                    "text" | "search" | "email" | "url" | "tel" | "password" | "date" | "month" | "week" | "time" | "datetime-local" | "number"
                 )
             })
         })
@@ -356,7 +293,7 @@ fn sync_shadow_before_edit(shadow_text: &mut String, editor: &parley::PlainEdito
     }
     let selection = editor.raw_selection();
     if selection.anchor() == selection.focus() {
-        shadow_text.pop(); // Safe now because of the check above
+        shadow_text.pop();
     } else {
         shadow_text.clear();
     }
