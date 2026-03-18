@@ -225,7 +225,7 @@ fn apply_keypress_event(
                 Some(GeneratedEvent::Select)
             }
             Key::Delete => {
-                // Removed `if input_data.is_password` so it tracks empty text correctly
+                
                 sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
                 if action_mod {
                     driver.delete_word()
@@ -235,7 +235,7 @@ fn apply_keypress_event(
                 Some(GeneratedEvent::Input)
             }
             Key::Backspace => {
-                // Removed `if input_data.is_password` so it tracks empty text correctly
+               
                 sync_shadow_before_edit(&mut input_data.shadow_text, &driver.editor);
                 if action_mod {
                     driver.backdelete_word()
