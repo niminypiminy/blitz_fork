@@ -62,4 +62,4 @@ rfd = { workspace = true, features = ["xdg-portal"], optional = true }
 mimalloc = { version = "0.1.48", optional = true }
 
 [target.'cfg(target_os = "android")'.dependencies]
-android-activity = { version = "0.9.0", features = ["native-activity"] }
+android-activity = { version = "0.6.0", features = ["native-activity"] }
