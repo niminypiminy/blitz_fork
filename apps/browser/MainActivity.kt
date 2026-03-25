@@ -1,19 +1,17 @@
+// android/app/src/main/java/dev/dioxus/main/MainActivity.kt  
 package dev.dioxus.main
 
-import android.app.NativeActivity
 import android.os.Bundle
+import com.google.androidgamesdk.GameActivity
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 
-class MainActivity : NativeActivity() {
+class MainActivity : GameActivity() {
 
-    // one should probably traverse the view tree to find the rendering surface. this will work regardless of manufacturer.
-    // example: if oem wraps those three previous getChildAt will not work. 
-    // the only thing that matters here is surfaceview. 
+   
     private fun findNativeSurfaceView(view: View): View? {
         if (view is SurfaceView) return view
-        
         if (view is ViewGroup) {
             for (i in 0 until view.childCount) {
                 val found = findNativeSurfaceView(view.getChildAt(i))
@@ -25,12 +23,10 @@ class MainActivity : NativeActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // wait until android has actually finished building the UI layout before search.
+
+        //focus hack that some devices still need. although gameactivity is far better than native.
         window.decorView.post {
             val nativeView = findNativeSurfaceView(window.decorView)
-            
-            
             nativeView?.apply {
                 isFocusable = true
                 isFocusableInTouchMode = true
@@ -39,4 +35,3 @@ class MainActivity : NativeActivity() {
         }
     }
 }
-
