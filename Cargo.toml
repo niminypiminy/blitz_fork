@@ -30,7 +30,7 @@ homepage = "https://github.com/dioxuslabs/blitz"
 repository = "https://github.com/dioxuslabs/blitz"
 categories = ["gui"]
 edition = "2024"
-rust-version = "1.90.0"
+rust-version = "1.92.0"
 
 [workspace.dependencies]
 # Blitz dependencies(in-repo)
@@ -98,26 +98,27 @@ taffy = { git = "https://github.com/DioxusLabs/taffy", rev = "4b6687da0ca1e9d71d
 ] }
 
 # AnyRender
-anyrender = { version = "0.7" }
-anyrender_vello = { version = "0.7" }
-anyrender_vello_cpu = { version = "0.9" }
-anyrender_vello_hybrid = { version = "0.2" }
-anyrender_skia = { version = "0.4" }
-anyrender_svg = { version = "0.8" }
-wgpu_context = { version = "0.3" }
+anyrender = { version = "0.8" }
+anyrender_serialize = { version = "0.1" }
+anyrender_vello = { version = "0.8" }
+anyrender_vello_cpu = { version = "0.10" }
+anyrender_vello_hybrid = { version = "0.3" }
+anyrender_skia = { version = "0.5" }
+anyrender_svg = { version = "0.9" }
+wgpu_context = { version = "0.4" }
 
 # Linebender + Fontations + WGPU + SVG
 color = "0.3"
 linebender_resource_handle = "0.1"
 peniko = "0.6.0"
 kurbo = "0.13"
-parley = { git = "https://github.com/linebender/parley", rev = "c3d3d41eaaca0d2dce9558f460c2c129559fc425", default-features = false, features = [
+parley = { git = "https://github.com/linebender/parley", rev = "d7df17aa32637e95b64c1f804fb7ef7ea1981bd3", default-features = false, features = [
     "std",
 ] }
 skrifa = { version = "0.40", default-features = false, features = [
     "std",
 ] } # Should match parley version
-wgpu = "27"
+wgpu = "28"
 softbuffer = "0.4"
 pixels = "0.15"
 vello = { version = "0.6", features = ["wgpu"] }
